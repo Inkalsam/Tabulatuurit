@@ -1,6 +1,6 @@
 # Tablulatuurit
 
-# Sovelluksen toiminnnot
+## Sovelluksen toiminnnot
 * Sovelluksessa käyttäjät pystyvät jakamaan tabulatuureja ja sointuja kappaleiden kitaraosioista. 
 * Käyttäjä pystyy luomaan tunnuksen ja kirjautumaan sisään sovellukseen.
 * Käyttäjä pystyy lisäämään sovellukseen tabulatuureja ja muokkaamaan ja poistamaan niitä.
