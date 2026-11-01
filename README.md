@@ -1,3 +1,3 @@
-# Testiprojekti
+# Resepti
 
-Tämä on esimerkki repositorion luomisesta.
+# Sovelluksen toiminnnot
