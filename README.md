@@ -1,4 +1,4 @@
-# Tablulatuurit
+# Tabulatuurit
 
 ## Sovelluksen toiminnnot
 * Sovelluksessa käyttäjät pystyvät jakamaan tabulatuureja ja sointuja kappaleiden kitaraosioista. 
