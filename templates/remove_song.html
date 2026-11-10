@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Tuotoksen poisto</title>
+</head>
+
+<body>
+  <h1>Tuotoksen poisto</h1>
+  <p>Haluatko varmasti poistaa tuotoksen "{{ song.title }}"?</p>
+  <form action="{{ url_for('delete_song', song_id=song.id) }}" method="post">
+    <button type="submit">Poista</button>
+  </form>
+  <p><a href="{{ url_for('edit_song', song_id=song.id) }}">Peruuta</a></p>
+</body>
+
+</html>

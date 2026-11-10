@@ -45,13 +45,16 @@ def edit_song(song_id):
 
     return render_template("edit_song.html", song=song_to_edit)
 
-@app.route("/songs/<int:song_id>/delete", methods=["POST"])
+@app.route("/songs/<int:song_id>/delete", methods=["GET", "POST"])
 def delete_song(song_id):
     song_details = song_service.get_song(song_id)
     if not song_details:
         return "Kappaletta ei löytynyt", 404
     if not session.get("user_id") or session["user_id"] != song_details[0]["user_id"]:
         return "Ei käyttöoikeutta", 403
+
+    if request.method == "GET":
+        return render_template("remove_song.html", song=song_details[0])
 
     result = song_service.delete_song(song_id, session["user_id"])
     if result is not None:
@@ -70,7 +73,7 @@ def create_item():
     if result is not None:
         return result
 
-    return redirect(url_for("songs"))
+    return redirect(url_for("index"))
 
 @app.route("/register")
 def register():
