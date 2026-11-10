@@ -23,17 +23,6 @@
     <input type="submit" value="Luo kappale" />
   </form>
 
-  <h2>Kaikki kappaleet</h2>
-  {% if songs %}
-    {% for song in songs %}
-      <article>
-        <h3>{{ song.title }} - {{ song.artist }}</h3>
-        <pre>{{ song.tab }}</pre>
-      </article>
-    {% endfor %}
-  {% else %}
-    <p>Ei vielä kappaleita.</p>
-  {% endif %}
 </body>
 
 </html>

@@ -26,6 +26,16 @@
 </p>
 
 <h2>Kaikki kappaleet</h2>
+
+<ul>
+  {% if songs %}
+  {% for song in songs %}
+  <li><a href="{{ url_for('song', song_id=song.id) }}">{{ song.title }}</a></li>
+  {% endfor %}
+  {% else %}
+  <li>Ei vielä kappaleita.</li>
+  {% endif %}
+</ul>
 </body>
 
 </html>

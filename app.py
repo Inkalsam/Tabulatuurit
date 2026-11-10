@@ -11,13 +11,19 @@ app.config.from_object(config)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    all_songs = song_service.get_songs()
+    return render_template("index.html", songs=all_songs)
 
 @app.route("/songs", strict_slashes=False)
 def songs():
-    db.ensure_songs_schema()
-    song_rows = db.query("SELECT title, artist, tab FROM songs ORDER BY id DESC")
-    return render_template("songs.html", songs=song_rows)
+    return render_template("songs.html")
+
+@app.route("/songs/<int:song_id>")
+def song(song_id):
+    song_details = song_service.get_song(song_id)
+    if not song_details:
+        return "Kappaletta ei löytynyt", 404
+    return render_template("show_song.html", song=song_details[0])
 
 @app.route("/songs/create", methods=["POST"])
 def create_item():

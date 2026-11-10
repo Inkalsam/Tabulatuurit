@@ -11,3 +11,19 @@ def add_song(title, artist, tabulatuuri, user_id):
     except sqlite3.Error:
         logging.getLogger(__name__).exception("Kappaleen luominen epäonnistui")
         return "VIRHE: kappaleen luominen epäonnistui", 500
+
+def get_songs():
+    db.ensure_songs_schema()
+    sql = "SELECT id, title FROM songs ORDER BY id DESC"
+    return db.query(sql)
+
+def get_song(song_id):
+    db.ensure_songs_schema()
+    sql = '''SELECT songs.title,
+                    songs.artist,
+                    songs.tab,
+                    users.username
+                FROM songs
+                LEFT JOIN users ON songs.user_id = users.id
+                WHERE songs.id = ?'''
+    return db.query(sql, [song_id])
