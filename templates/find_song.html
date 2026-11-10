@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Etsi kappale</title>
+</head>
+
+<body>
+    <h1>Etsi kappale</h1>
+
+    <form action="{{ url_for('find_song') }}" method="get">
+        <p>
+            Hakusana: <input type="text" name="query" value = "{{ query }}" />
+        </p>
+        <input type="submit" value="Etsi" />
+    </form>
+
+    <p>
+        <a href="{{ url_for('index') }}">Takaisin</a>
+    </p>
+
+    {% if query %}
+    <h2>Tulokset</h2>
+    {% if results %}
+    <ul>
+        {% for song in results %}
+        <li>
+            <a href="{{ url_for('song', song_id=song.id) }}">{{ song.title }}</a>
+            - {{ song.artist }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>Ei tuloksia.</p>
+    {% endif %}
+    {% endif %}
+</body>
+
+</html>

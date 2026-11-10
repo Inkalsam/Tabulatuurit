@@ -14,6 +14,12 @@ def index():
     all_songs = song_service.get_songs()
     return render_template("index.html", songs=all_songs)
 
+@app.route("/find_song")
+def find_song():
+    query = request.args.get("query", "").strip()
+    results = song_service.search_songs(query) if query else []
+    return render_template("find_song.html", query=query, results=results)
+
 @app.route("/songs", strict_slashes=False)
 def songs():
     return render_template("songs.html")

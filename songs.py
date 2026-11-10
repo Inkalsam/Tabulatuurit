@@ -17,6 +17,15 @@ def get_songs():
     sql = "SELECT id, title FROM songs ORDER BY id DESC"
     return db.query(sql)
 
+def search_songs(query):
+    db.ensure_songs_schema()
+    search_term = f"%{query}%"
+    sql = """SELECT id, title, artist
+             FROM songs
+             WHERE title LIKE ? OR artist LIKE ?
+             ORDER BY id DESC"""
+    return db.query(sql, [search_term, search_term])
+
 def get_song(song_id):
     db.ensure_songs_schema()
     sql = '''SELECT songs.id,
