@@ -4,6 +4,7 @@ from flask import redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 import config
 import db
+import songs as song_service
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -25,14 +26,10 @@ def create_item():
     artist = request.form.get("artist", "").strip()
     tabulatuuri = request.form.get("tabulatuuri", "").strip()
     user_id = session.get("user_id")
-    if not title or not artist or not tabulatuuri:
-        return "VIRHE: kaikki kentät ovat pakollisia", 400
-    try:
-        sql = "INSERT INTO songs (title, artist, tab, user_id) VALUES (?, ?, ?, ?)"
-        db.execute(sql, [title, artist, tabulatuuri, user_id])
-    except sqlite3.Error:
-        app.logger.exception("Kappaleen luominen epäonnistui")
-        return "VIRHE: kappaleen luominen epäonnistui"
+
+    result = song_service.add_song(title, artist, tabulatuuri, user_id)
+    if result is not None:
+        return result
 
     return redirect(url_for("songs"))
 
