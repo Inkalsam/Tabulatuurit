@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Muokkaa: {{ song.title }}</title>
+</head>
+
+<body>
+  <h1>Muokkaa kappaletta</h1>
+  <form action="{{ url_for('edit_song', song_id=song.id) }}" method="post">
+    <p>
+      Kappale:<br />
+      <input type="text" name="title" value="{{ song.title }}" required />
+    </p>
+    <p>
+      Artisti:<br />
+      <input type="text" name="artist" value="{{ song.artist }}" required />
+    </p>
+    <p>
+      Tabulatuuri:<br />
+      <textarea rows="10" cols="50" name="tabulatuuri" required>{{ song.tab }}</textarea>
+    </p>
+    <input type="submit" value="Tallenna" />
+  </form>
+  <p><a href="{{ url_for('song', song_id=song.id) }}">Peruuta</a></p>
+</body>
+
+</html>

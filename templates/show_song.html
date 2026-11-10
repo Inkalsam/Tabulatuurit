@@ -6,15 +6,21 @@
 </head>
 
 <body>
-    <h1> {{ song.title }} </h1>
-    <p>Artisti: {{ song.artist }} </p>
+    <h1>{{ song.title }}</h1>
+    {% if session.get('user_id') and session.get('user_id') == song.user_id %}
+    <div>
+        <a href="{{ url_for('edit_song', song_id=song.id) }}">Muokkaa</a>
+        <form action="{{ url_for('delete_song', song_id=song.id) }}" method="post" style="display: inline">
+            <button type="submit">Poista</button>
+        </form>
+    </div>
+    {% endif %}
+    <p>Artisti: {{ song.artist }}</p>
     <p>Tabulatuuri:</p>
-    <p>{{ song.tab }}</p>
-    <p> 
-        Käyttäjä: {{ song.username }}
-    </p>
+    <pre>{{ song.tab }}</pre>
+    <p>Käyttäjä: {{ song.username or "Tuntematon" }}</p>
     <p>
-    <a href="/">Takaisin</a>
+        <a href="{{ url_for('index') }}">Takaisin</a>
     </p>
 </body>
 
