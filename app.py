@@ -1,6 +1,6 @@
 from flask import Flask
 import sqlite3
-from flask import redirect, render_template, request, session
+from flask import redirect, render_template, request, session, url_for
 from werkzeug.security import check_password_hash, generate_password_hash
 import config
 import db
@@ -12,15 +12,41 @@ app.config.from_object(config)
 def index():
     return render_template("index.html")
 
+@app.route("/songs", strict_slashes=False)
+def songs():
+    db.ensure_songs_schema()
+    song_rows = db.query("SELECT title, artist, tab FROM songs ORDER BY id DESC")
+    return render_template("songs.html", songs=song_rows)
+
+@app.route("/songs/create", methods=["POST"])
+def create_item():
+    db.ensure_songs_schema()
+    title = request.form.get("title", "").strip()
+    artist = request.form.get("artist", "").strip()
+    tabulatuuri = request.form.get("tabulatuuri", "").strip()
+    user_id = session.get("user_id")
+    if not title or not artist or not tabulatuuri:
+        return "VIRHE: kaikki kentät ovat pakollisia", 400
+    try:
+        sql = "INSERT INTO songs (title, artist, tab, user_id) VALUES (?, ?, ?, ?)"
+        db.execute(sql, [title, artist, tabulatuuri, user_id])
+    except sqlite3.Error:
+        app.logger.exception("Kappaleen luominen epäonnistui")
+        return "VIRHE: kappaleen luominen epäonnistui"
+
+    return redirect(url_for("songs"))
+
 @app.route("/register")
 def register():
     return render_template("register.html")
 
 @app.route("/create", methods=["POST"])
 def create():
-    username = request.form["username"]
-    password1 = request.form["password1"]
-    password2 = request.form["password2"]
+    username = request.form.get("username", "").strip()
+    password1 = request.form.get("password1", "")
+    password2 = request.form.get("password2", "")
+    if not username or not password1 or not password2:
+        return "VIRHE: kaikki kentät ovat pakollisia", 400
     if password1 != password2:
         return "VIRHE: salasanat eivät ole samat"
     password_hash = generate_password_hash(password1)
@@ -41,15 +67,17 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        
-        sql = "SELECT password_hash FROM users WHERE username = ?"
+
+        sql = "SELECT id, password_hash FROM users WHERE username = ?"
         rows = db.query(sql, [username])
         if not rows:
             return "VIRHE: väärä tunnus tai salasana"
 
+        user_id = rows[0]["id"]
         password_hash = rows[0]["password_hash"]
 
         if check_password_hash(password_hash, password):
+            session["user_id"] = user_id
             session["username"] = username
             return redirect("/")
         else:
@@ -57,5 +85,5 @@ def login():
 
 @app.route("/logout")
 def logout():
-    del session["username"]
+    session.clear()
     return redirect("/")

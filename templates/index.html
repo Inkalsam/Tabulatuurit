@@ -10,7 +10,7 @@
 
   {% if session.username %}
   <p>
-    Olet kirjautunut nimellä {{ session.username }}
+    Olet kirjautunut nimellä {{ session.username }}, id-numerosi on {{ session.user_id }}.
   </p>
   {% endif %}
 
@@ -19,6 +19,12 @@
     <a href="/register">Luo tunnus</a>
     <a href="/logout">Kirjaudu ulos</a>
   </p>
+
+  <p>
+    <a href="{{ url_for('songs') }}">Näytä kaikki kappaleet</a>
+
+</p>
+
 </body>
 
 </html>
