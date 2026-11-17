@@ -15,15 +15,15 @@
   {% endif %}
 
   <p>
+    {% if session.get('user_id') %}
+    <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+    <a href="{{ url_for('songs') }}">Uusi kappale</a>
+    {% else %}
     <a href="/login">Kirjaudu sisään</a>
     <a href="/register">Luo tunnus</a>
-    <a href="/logout">Kirjaudu ulos</a>
-  </p>
-
-  <p>
-    <a href="{{ url_for('songs') }}">Uusi kappale</a>
+    {% endif %}
     <a href="{{ url_for('find_song') }}">Etsi kappale</a>
-</p>
+  </p>
 
 <h2>Kaikki kappaleet</h2>
 

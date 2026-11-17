@@ -24,7 +24,8 @@ def search_songs(query):
              FROM songs
              WHERE title LIKE ? OR artist LIKE ?
              ORDER BY id DESC"""
-    return db.query(sql, [search_term, search_term])
+    result = db.query(sql, [search_term, search_term])
+    return result if result else None
 
 def get_song(song_id):
     db.ensure_songs_schema()
@@ -37,7 +38,8 @@ def get_song(song_id):
                 FROM songs
                 LEFT JOIN users ON songs.user_id = users.id
                 WHERE songs.id = ?'''
-    return db.query(sql, [song_id])
+    result = db.query(sql, [song_id])
+    return result[0] if result else None
 
 def update_song(song_id, user_id, title, artist, tabulatuuri):
     if not title or not artist or not tabulatuuri:
