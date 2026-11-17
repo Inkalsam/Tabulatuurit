@@ -22,6 +22,9 @@ def find_song():
 
 @app.route("/songs", strict_slashes=False)
 def songs():
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
     return render_template("songs.html")
 
 @app.route("/songs/<int:song_id>")
@@ -29,14 +32,14 @@ def song(song_id):
     song_details = song_service.get_song(song_id)
     if not song_details:
         return "Kappaletta ei löytynyt", 404
-    return render_template("show_song.html", song=song_details[0])
+    return render_template("show_song.html", song=song_details)
 
 @app.route("/songs/<int:song_id>/edit", methods=["GET", "POST"])
 def edit_song(song_id):
     song_details = song_service.get_song(song_id)
     if not song_details:
         return "Kappaletta ei löytynyt", 404
-    song_to_edit = song_details[0]
+    song_to_edit = song_details
     if not session.get("user_id") or session["user_id"] != song_to_edit["user_id"]:
         return "Ei käyttöoikeutta", 403
 
@@ -56,11 +59,11 @@ def delete_song(song_id):
     song_details = song_service.get_song(song_id)
     if not song_details:
         return "Kappaletta ei löytynyt", 404
-    if not session.get("user_id") or session["user_id"] != song_details[0]["user_id"]:
+    if not session.get("user_id") or session["user_id"] != song_details["user_id"]:
         return "Ei käyttöoikeutta", 403
 
     if request.method == "GET":
-        return render_template("remove_song.html", song=song_details[0])
+        return render_template("remove_song.html", song=song_details)
 
     result = song_service.delete_song(song_id, session["user_id"])
     if result is not None:
@@ -69,6 +72,10 @@ def delete_song(song_id):
 
 @app.route("/songs/create", methods=["POST"])
 def create_item():
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+
     db.ensure_songs_schema()
     title = request.form.get("title", "").strip()
     artist = request.form.get("artist", "").strip()
@@ -87,6 +94,7 @@ def register():
 
 @app.route("/create", methods=["POST"])
 def create():
+
     username = request.form.get("username", "").strip()
     password1 = request.form.get("password1", "")
     password2 = request.form.get("password2", "")
@@ -103,6 +111,10 @@ def create():
         return "VIRHE: tunnus on jo varattu"
 
     return "Tunnus luotu"
+
+def require_user_logged_in():
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
