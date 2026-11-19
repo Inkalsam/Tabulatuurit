@@ -2,12 +2,18 @@ import logging
 import sqlite3
 import db
 
-def add_song(title, artist, tabulatuuri, user_id):
+def add_song(title, artist, tabulatuuri, user_id, classes):
     if not title or not artist or not tabulatuuri:
         return "VIRHE: kaikki kentät ovat pakollisia", 400
     try:
+        db.ensure_songs_schema()
+        db.ensure_song_classes_schema()
         sql = "INSERT INTO songs (title, artist, tab, user_id) VALUES (?, ?, ?, ?)"
         db.execute(sql, [title, artist, tabulatuuri, user_id])
+        song_id = db.last_insert_id()
+        sql = "INSERT INTO song_classes (song_id, title, value) VALUES (?, ?, ?)"
+        for title, value in classes:
+            db.execute(sql, [song_id, title, value])
     except sqlite3.Error:
         logging.getLogger(__name__).exception("Kappaleen luominen epäonnistui")
         return "VIRHE: kappaleen luominen epäonnistui", 500
@@ -41,18 +47,39 @@ def get_song(song_id):
     result = db.query(sql, [song_id])
     return result[0] if result else None
 
-def update_song(song_id, user_id, title, artist, tabulatuuri):
+def get_classes(song_id):
+    db.ensure_song_classes_schema()
+    result = db.query(
+        "SELECT title, value FROM song_classes WHERE song_id = ?",
+        [song_id],
+    )
+    return {row["title"]: row["value"] for row in result}
+
+def update_song(song_id, user_id, title, artist, tabulatuuri, classes):
     if not title or not artist or not tabulatuuri:
         return "VIRHE: kaikki kentät ovat pakollisia", 400
     try:
+        db.ensure_song_classes_schema()
         sql = "UPDATE songs SET title = ?, artist = ?, tab = ? WHERE id = ? AND user_id = ?"
         db.execute(sql, [title, artist, tabulatuuri, song_id, user_id])
+        db.execute("DELETE FROM song_classes WHERE song_id = ?", [song_id])
+        sql = "INSERT INTO song_classes (song_id, title, value) VALUES (?, ?, ?)"
+        for title, value in classes:
+            db.execute(sql, [song_id, title, value])
     except sqlite3.Error:
         logging.getLogger(__name__).exception("Kappaleen muokkaaminen epäonnistui")
         return "VIRHE: kappaleen muokkaaminen epäonnistui", 500
 
 def delete_song(song_id, user_id):
     try:
+        db.ensure_song_classes_schema()
+        db.execute(
+            """DELETE FROM song_classes
+               WHERE song_id IN (
+                   SELECT id FROM songs WHERE id = ? AND user_id = ?
+               )""",
+            [song_id, user_id],
+        )
         sql = "DELETE FROM songs WHERE id = ? AND user_id = ?"
         db.execute(sql, [song_id, user_id])
     except sqlite3.Error:

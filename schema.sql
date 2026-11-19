@@ -11,3 +11,10 @@ CREATE TABLE songs (
     tab TEXT,
     user_id INTEGER REFERENCES users
 );
+
+CREATE TABLE song_classes (
+    id INTEGER PRIMARY KEY,
+    song_id INTEGER REFERENCES songs,
+    title TEXT,
+    value TEXT
+);

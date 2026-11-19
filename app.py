@@ -40,7 +40,8 @@ def song(song_id):
     song_details = song_service.get_song(song_id)
     if not song_details:
         return "Kappaletta ei löytynyt", 404
-    return render_template("show_song.html", song=song_details)
+    classes = song_service.get_classes(song_id)
+    return render_template("show_song.html", song=song_details, classes=classes)
 
 @app.route("/songs/<int:song_id>/edit", methods=["GET", "POST"])
 def edit_song(song_id):
@@ -61,12 +62,23 @@ def edit_song(song_id):
             return "VIRHE: artistin nimi on liian pitkä", 400
         if not tabulatuuri or len(tabulatuuri) > 1000:
             return "VIRHE: tabulatuurin pituus on liian pitkä", 400
-        result = song_service.update_song(song_id, session["user_id"], title, artist, tabulatuuri)
+        classes = []
+        for class_title in ("Genre", "Vaikeustaso"):
+            value = request.form.get(class_title, "").strip()
+            if value:
+                classes.append((class_title, value))
+        result = song_service.update_song(
+            song_id, session["user_id"], title, artist, tabulatuuri, classes
+        )
         if result is not None:
             return result
         return redirect(url_for("song", song_id=song_id))
 
-    return render_template("edit_song.html", song=song_to_edit)
+    return render_template(
+        "edit_song.html",
+        song=song_to_edit,
+        song_classes=song_service.get_classes(song_id),
+    )
 
 @app.route("/songs/<int:song_id>/delete", methods=["GET", "POST"])
 def delete_song(song_id):
@@ -99,10 +111,14 @@ def create_item():
         return "VIRHE: artistin nimi on liian pitkä", 400
     if not tabulatuuri or len(tabulatuuri) > 1000:
         return "VIRHE: tabulatuurin pituus on liian pitkä", 400
-    db.ensure_songs_schema()
     user_id = session.get("user_id")
 
-    result = song_service.add_song(title, artist, tabulatuuri, user_id)
+    classes = []
+    for class_title in ("Genre", "Vaikeustaso"):
+        value = request.form.get(class_title, "").strip()
+        if value:
+            classes.append((class_title, value))
+    result = song_service.add_song(title, artist, tabulatuuri, user_id, classes)
     if result is not None:
         return result
 

@@ -20,6 +20,25 @@
       Tabulatuuri:<br />
       <textarea rows="10" cols="50" name="tabulatuuri" maxlength="1000" required>{{ song.tab }}</textarea>
     </p>
+    <p>
+      Genre:<br />
+      <select name="Genre">
+        <option value="">Valitse genre</option>
+        <option value="rock" {% if song_classes.get('Genre') == 'rock' %}selected{% endif %}>rock</option>
+        <option value="metal" {% if song_classes.get('Genre') == 'metal' %}selected{% endif %}>metal</option>
+        <option value="jazz" {% if song_classes.get('Genre') == 'jazz' %}selected{% endif %}>jazz</option>
+        <option value="pop" {% if song_classes.get('Genre') == 'pop' %}selected{% endif %}>pop</option>
+      </select>
+    </p>
+    <p>
+      Vaikeustaso:<br />
+      <select name="Vaikeustaso">
+        <option value="">Valitse vaikeustaso</option>
+        <option value="aloittelija" {% if song_classes.get('Vaikeustaso') == 'aloittelija' %}selected{% endif %}>aloittelija</option>
+        <option value="keskitasoinen" {% if song_classes.get('Vaikeustaso') == 'keskitasoinen' %}selected{% endif %}>keskitasoinen</option>
+        <option value="kokenut" {% if song_classes.get('Vaikeustaso') == 'kokenut' %}selected{% endif %}>kokenut</option>
+      </select>
+    </p>
     <input type="submit" value="Tallenna" />
   </form>
   <p><a href="{{ url_for('delete_song', song_id=song.id) }}">Poista kappale</a></p>

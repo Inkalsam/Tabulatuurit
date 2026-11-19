@@ -53,6 +53,21 @@ def ensure_songs_schema():
     finally:
         con.close()
 
+def ensure_song_classes_schema():
+    con = get_connection()
+    try:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS song_classes (
+                id INTEGER PRIMARY KEY,
+                song_id INTEGER REFERENCES songs(id),
+                title TEXT,
+                value TEXT
+            )
+        """)
+        con.commit()
+    finally:
+        con.close()
+
 def execute(sql, params=[]):
     con = get_connection()
     try:

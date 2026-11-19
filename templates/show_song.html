@@ -16,6 +16,14 @@
     <p>Artisti: {{ song.artist }}</p>
     <p>Tabulatuuri:</p>
     <pre>{{ song.tab }}</pre>
+    {% if classes %}
+    <p>Luokat:</p>
+    <ul>
+        {% for title, value in classes.items() %}
+        <li>{{ title }}: {{ value }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     <p>Käyttäjä: <a href="/user/{{ song.user_id }}">{{ song.username }}</a></p>
     <p>
         <a href="{{ url_for('index') }}">Takaisin</a>
