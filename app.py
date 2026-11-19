@@ -1,10 +1,10 @@
 from flask import Flask
 import sqlite3
 from flask import redirect, render_template, request, session, url_for
-from werkzeug.security import check_password_hash, generate_password_hash
 import config
 import db
 import songs as song_service
+import users
 
 app = Flask(__name__)
 app.config.from_object(config)
@@ -27,6 +27,14 @@ def songs():
         return login_redirect
     return render_template("songs.html")
 
+@app.route("/user/<int:user_id>")
+def show_user(user_id):
+    user = users.get_user(user_id)
+    if not user:
+        return "Käyttäjää ei löytynyt", 404
+    songs = users.get_songs(user_id)
+    return render_template("show_user.html", user=user, songs=songs)
+
 @app.route("/songs/<int:song_id>")
 def song(song_id):
     song_details = song_service.get_song(song_id)
@@ -47,6 +55,12 @@ def edit_song(song_id):
         title = request.form.get("title", "").strip()
         artist = request.form.get("artist", "").strip()
         tabulatuuri = request.form.get("tabulatuuri", "").strip()
+        if not title or len(title) > 50:
+            return "VIRHE: kappaleen nimi on liian pitkä", 400
+        if not artist or len(artist) > 50:
+            return "VIRHE: artistin nimi on liian pitkä", 400
+        if not tabulatuuri or len(tabulatuuri) > 1000:
+            return "VIRHE: tabulatuurin pituus on liian pitkä", 400
         result = song_service.update_song(song_id, session["user_id"], title, artist, tabulatuuri)
         if result is not None:
             return result
@@ -76,10 +90,16 @@ def create_item():
     if login_redirect:
         return login_redirect
 
-    db.ensure_songs_schema()
     title = request.form.get("title", "").strip()
     artist = request.form.get("artist", "").strip()
     tabulatuuri = request.form.get("tabulatuuri", "").strip()
+    if not title or len(title) > 50:
+        return "VIRHE: kappaleen nimi on liian pitkä", 400
+    if not artist or len(artist) > 50:
+        return "VIRHE: artistin nimi on liian pitkä", 400
+    if not tabulatuuri or len(tabulatuuri) > 1000:
+        return "VIRHE: tabulatuurin pituus on liian pitkä", 400
+    db.ensure_songs_schema()
     user_id = session.get("user_id")
 
     result = song_service.add_song(title, artist, tabulatuuri, user_id)
@@ -101,14 +121,12 @@ def create():
     if not username or not password1 or not password2:
         return "VIRHE: kaikki kentät ovat pakollisia", 400
     if password1 != password2:
-        return "VIRHE: salasanat eivät ole samat"
-    password_hash = generate_password_hash(password1)
+        return "VIRHE: salasanat eivät ole samat", 400
 
     try:
-        sql = "INSERT INTO users (username, password_hash) VALUES (?, ?)"
-        db.execute(sql, [username, password_hash])
+        users.create_user(username, password1)
     except sqlite3.IntegrityError:
-        return "VIRHE: tunnus on jo varattu"
+        return "VIRHE: tunnus on jo varattu", 409
 
     return "Tunnus luotu"
 
@@ -122,23 +140,19 @@ def login():
         return render_template("login.html")
 
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
 
-        sql = "SELECT id, password_hash FROM users WHERE username = ?"
-        rows = db.query(sql, [username])
-        if not rows:
-            return "VIRHE: väärä tunnus tai salasana"
+        if not username or not password:
+            return "VIRHE: tunnus ja salasana ovat pakollisia", 400
 
-        user_id = rows[0]["id"]
-        password_hash = rows[0]["password_hash"]
-
-        if check_password_hash(password_hash, password):
+        user_id = users.check_login(username, password)
+        if user_id:
             session["user_id"] = user_id
             session["username"] = username
             return redirect("/")
         else:
-            return "VIRHE: väärä tunnus tai salasana"
+            return "VIRHE: väärä tunnus tai salasana", 401
 
 @app.route("/logout")
 def logout():

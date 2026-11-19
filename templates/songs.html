@@ -10,15 +10,15 @@
   <form action="{{ url_for('create_item') }}" method="post">
     <p>
       Kappale: <br />
-      <input type="text" name="title" required />
+      <input type="text" name="title" maxlength="50" required />
     </p>
     <p>
       Artisti: <br />
-      <input type="text" name="artist" required />
+      <input type="text" name="artist" maxlength="50" required />
     </p>
     <p>
       Tabulatuuri: <br />
-      <textarea rows="10" cols="50" name="tabulatuuri" required></textarea>
+      <textarea rows="10" cols="50" name="tabulatuuri" maxlength="1000" required></textarea>
     </p>
     <input type="submit" value="Luo kappale" />
   </form>

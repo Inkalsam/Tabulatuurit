@@ -16,7 +16,7 @@
     <p>Artisti: {{ song.artist }}</p>
     <p>Tabulatuuri:</p>
     <pre>{{ song.tab }}</pre>
-    <p>Käyttäjä: {{ song.username or "Tuntematon" }}</p>
+    <p>Käyttäjä: <a href="/user/{{ song.user_id }}">{{ song.username }}</a></p>
     <p>
         <a href="{{ url_for('index') }}">Takaisin</a>
     </p>
