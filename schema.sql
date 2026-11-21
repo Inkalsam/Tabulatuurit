@@ -12,6 +12,12 @@ CREATE TABLE songs (
     user_id INTEGER REFERENCES users
 );
 
+CREATE TABLE classes (
+    id INTEGER PRIMARY KEY,
+    title TEXT,
+    value TEXT
+);
+
 CREATE TABLE song_classes (
     id INTEGER PRIMARY KEY,
     song_id INTEGER REFERENCES songs,

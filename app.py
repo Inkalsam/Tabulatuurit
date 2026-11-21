@@ -25,7 +25,8 @@ def songs():
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
-    return render_template("songs.html")
+    classes = song_service.get_all_classes()
+    return render_template("songs.html", classes=classes)
 
 @app.route("/user/<int:user_id>")
 def show_user(user_id):
@@ -62,11 +63,13 @@ def edit_song(song_id):
             return "VIRHE: artistin nimi on liian pitkä", 400
         if not tabulatuuri or len(tabulatuuri) > 1000:
             return "VIRHE: tabulatuurin pituus on liian pitkä", 400
+
         classes = []
-        for class_title in ("Genre", "Vaikeustaso"):
-            value = request.form.get(class_title, "").strip()
-            if value:
-                classes.append((class_title, value))
+        for entry in request.form.getlist("classes"):
+            if entry:
+                parts = entry.split(":", 1)
+                if len(parts) == 2:
+                    classes.append((parts[0], parts[1]))
         result = song_service.update_song(
             song_id, session["user_id"], title, artist, tabulatuuri, classes
         )
@@ -78,6 +81,7 @@ def edit_song(song_id):
         "edit_song.html",
         song=song_to_edit,
         song_classes=song_service.get_classes(song_id),
+        classes=song_service.get_all_classes(),
     )
 
 @app.route("/songs/<int:song_id>/delete", methods=["GET", "POST"])
@@ -114,10 +118,11 @@ def create_item():
     user_id = session.get("user_id")
 
     classes = []
-    for class_title in ("Genre", "Vaikeustaso"):
-        value = request.form.get(class_title, "").strip()
-        if value:
-            classes.append((class_title, value))
+    for entry in request.form.getlist("classes"):
+        if entry:
+            parts = entry.split(":", 1)
+            if len(parts) == 2:
+                classes.append((parts[0], parts[1]))
     result = song_service.add_song(title, artist, tabulatuuri, user_id, classes)
     if result is not None:
         return result

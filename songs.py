@@ -2,6 +2,19 @@ import logging
 import sqlite3
 import db
 
+def get_all_classes():
+    sql = "SELECT title, value FROM classes ORDER BY id"
+    result = db.query(sql)
+
+    classes = {}
+    for row in result:
+        title = row["title"]
+        value = row["value"]
+        classes.setdefault(title, []).append(value)
+    return classes
+
+
+
 def add_song(title, artist, tabulatuuri, user_id, classes):
     if not title or not artist or not tabulatuuri:
         return "VIRHE: kaikki kentät ovat pakollisia", 400
