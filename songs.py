@@ -24,6 +24,7 @@ def add_song(title, artist, tabulatuuri, user_id, classes):
         sql = "INSERT INTO songs (title, artist, tab, user_id) VALUES (?, ?, ?, ?)"
         db.execute(sql, [title, artist, tabulatuuri, user_id])
         song_id = db.last_insert_id()
+
         sql = "INSERT INTO song_classes (song_id, title, value) VALUES (?, ?, ?)"
         for title, value in classes:
             db.execute(sql, [song_id, title, value])

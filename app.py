@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, abort
 import sqlite3
 from flask import redirect, render_template, request, session, url_for
 import config
@@ -65,11 +65,16 @@ def edit_song(song_id):
             return "VIRHE: tabulatuurin pituus on liian pitkä", 400
 
         classes = []
+        all_classes = song_service.get_all_classes()
         for entry in request.form.getlist("classes"):
             if entry:
                 parts = entry.split(":", 1)
-                if len(parts) == 2:
-                    classes.append((parts[0], parts[1]))
+                if len(parts) != 2:
+                    abort(403)
+                title_name, value = parts
+                if title_name not in all_classes or value not in all_classes[title_name]:
+                    abort(403)
+                classes.append((title_name, value))
         result = song_service.update_song(
             song_id, session["user_id"], title, artist, tabulatuuri, classes
         )
@@ -117,12 +122,18 @@ def create_item():
         return "VIRHE: tabulatuurin pituus on liian pitkä", 400
     user_id = session.get("user_id")
 
+    all_classes = song_service.get_all_classes()
+
     classes = []
     for entry in request.form.getlist("classes"):
         if entry:
             parts = entry.split(":", 1)
-            if len(parts) == 2:
-                classes.append((parts[0], parts[1]))
+            if len(parts) != 2:
+                abort(403)
+            title_name, value = parts
+            if title_name not in all_classes or value not in all_classes[title_name]:
+                abort(403)
+            classes.append((title_name, value))
     result = song_service.add_song(title, artist, tabulatuuri, user_id, classes)
     if result is not None:
         return result
@@ -179,3 +190,7 @@ def login():
 def logout():
     session.clear()
     return redirect("/")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
