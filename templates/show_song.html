@@ -11,8 +11,12 @@
     <div>
         <a href="{{ url_for('edit_song', song_id=song.id) }}">Muokkaa</a>
         <a href="{{ url_for('delete_song', song_id=song.id) }}">Poista</a>
+        <a href="{{ url_for('edit_images', song_id=song.id) }}">Kuvat</a>
     </div>
     {% endif %}
+    {% for image in images %}
+    <img src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+    {% endfor %}
     <p>Artisti: {{ song.artist }}</p>
     <p>Tabulatuuri:</p>
     <pre>{{ song.tab }}</pre>

@@ -1,6 +1,6 @@
 from flask import Flask, abort
 import sqlite3
-from flask import redirect, render_template, request, session, url_for
+from flask import redirect, make_response, render_template, request, session, url_for
 import config
 import db
 import songs as song_service
@@ -70,6 +70,7 @@ def song(song_id):
         return "Kappaletta ei löytynyt", 404
     classes = song_service.get_classes(song_id)
     song_comments = song_service.get_comments(song_id)
+    images = song_service.get_images(song_id)
     review_count, review_average, user_rating = song_service.get_review_data(
         song_id, session.get("user_id")
     )
@@ -81,7 +82,63 @@ def song(song_id):
         review_count=review_count,
         review_average=review_average,
         user_rating=user_rating,
+        images=images,
     )
+
+@app.route("/image/<int:image_id>")
+def show_image(image_id):
+    image = song_service.get_image(image_id)
+    if not image:
+        abort(404)
+
+    response = make_response(bytes(image))
+    response.headers.set("Content-Type", "image/png")
+    return response
+
+@app.route("/images/<int:song_id>")
+def edit_images(song_id):
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+    song_details = song_service.get_song(song_id)
+    if not song_details:
+        abort(404)
+    if song_details["user_id"] != session["user_id"]:
+        abort(403)
+
+    images = song_service.get_images(song_id)
+    return render_template("images.html", song=song_details, images=images)
+
+@app.route("/add_image", methods=["POST"])
+def add_image():
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+
+    song_id = request.form.get("song_id", "").strip()
+    if not song_id.isdigit():
+        return "VIRHE: virheellinen kappaleen ID", 400
+    song_id = int(song_id)
+    song_details = song_service.get_song(song_id)
+    if not song_details:
+        abort(404)
+    if song_details["user_id"] != session["user_id"]:
+        abort(403)
+
+    image_file = request.files.get("image")
+    if not image_file or not image_file.filename:
+        return "VIRHE: kuva puuttuu", 400
+    if not image_file.filename.lower().endswith(".png"):
+        return "VIRHE: väärä tiedostomuoto", 400
+
+    image = image_file.stream.read(100 * 1024 + 1)
+    if len(image) > 100 * 1024:
+        return "VIRHE: liian suuri kuva", 400
+    if not image.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "VIRHE: tiedosto ei ole PNG-kuva", 400
+
+    song_service.add_image(song_id, image)
+    return redirect(url_for("edit_images", song_id=song_id))
 
 @app.route("/songs/<int:song_id>/review", methods=["POST"])
 def create_review(song_id):

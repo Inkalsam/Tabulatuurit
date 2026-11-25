@@ -39,3 +39,9 @@ CREATE TABLE song_classes (
     title TEXT,
     value TEXT
 );
+
+CREATE TABLE images (
+    id INTEGER PRIMARY KEY,
+    song_id INTEGER REFERENCES songs(id),
+    image BLOB
+);

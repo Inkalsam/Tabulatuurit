@@ -99,6 +99,43 @@ def ensure_reviews_schema():
     finally:
         con.close()
 
+def ensure_images_schema():
+    con = get_connection()
+    try:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS images (
+                id INTEGER PRIMARY KEY,
+                song_id INTEGER REFERENCES songs(id),
+                image BLOB
+            )
+        """)
+        foreign_keys = con.execute("PRAGMA foreign_key_list(images)").fetchall()
+        if any(row["from"] == "song_id" and row["table"] != "songs" for row in foreign_keys):
+            con.execute("PRAGMA foreign_keys = OFF")
+            try:
+                con.execute("BEGIN")
+                con.execute("""
+                    CREATE TABLE images_new (
+                        id INTEGER PRIMARY KEY,
+                        song_id INTEGER REFERENCES songs(id),
+                        image BLOB
+                    )
+                """)
+                con.execute(
+                    "INSERT INTO images_new (id, song_id, image) "
+                    "SELECT id, song_id, image FROM images"
+                )
+                con.execute("DROP TABLE images")
+                con.execute("ALTER TABLE images_new RENAME TO images")
+                con.commit()
+            except sqlite3.Error:
+                con.rollback()
+                raise
+            finally:
+                con.execute("PRAGMA foreign_keys = ON")
+    finally:
+        con.close()
+
 def execute(sql, params=[]):
     con = get_connection()
     try:

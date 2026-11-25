@@ -48,6 +48,22 @@ def get_comments(song_id):
     result = db.query(sql, [song_id])
     return result
 
+def get_images(song_id):
+    db.ensure_images_schema()
+    sql = "SELECT id FROM images WHERE song_id = ?"
+    return db.query(sql, [song_id])
+
+def add_image(song_id, image):
+    db.ensure_images_schema()
+    sql = "INSERT INTO images (song_id, image) VALUES (?, ?)"
+    db.execute(sql, [song_id, image])
+
+def get_image(image_id):
+    db.ensure_images_schema()
+    sql = "SELECT image FROM images WHERE id = ?"
+    result = db.query(sql, [image_id])
+    return result[0]["image"] if result else None
+
 def get_review_data(song_id, user_id):
     db.ensure_reviews_schema()
     summary = db.query(

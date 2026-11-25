@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> Tabulatuurin kuvat </title>
+</head>
+
+<body>
+    <h1>Tabulatuurin kuvat</h1>
+
+    <p>
+        Kappaleessa on {{ images|length }} kuvaa.
+    </p>
+
+    {% for image in images %}
+    <p>
+        <img src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+    </p>
+    {% endfor %}
+
+    <h2>Lisää uusi kuva</h2>
+    <form action="/add_image" method="post" enctype="multipart/form-data">
+    <p>
+      Kuva: <input type="file" name="image" accept=".png" required />
+    </p>
+    <input type = "hidden" name = "song_id" value="{{ song.id }}">
+    <input type="submit" value="Lähetä" />
+  </form>
+
+    <p>
+        <a href="{{ url_for('song', song_id=song.id) }}">Takaisin</a>
+    </p>
+</body>
+
+</html>
