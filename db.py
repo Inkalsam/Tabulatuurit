@@ -83,6 +83,22 @@ def ensure_comments_schema():
     finally:
         con.close()
 
+def ensure_reviews_schema():
+    con = get_connection()
+    try:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS reviews (
+                id INTEGER PRIMARY KEY,
+                song_id INTEGER NOT NULL REFERENCES songs(id),
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+                UNIQUE (song_id, user_id)
+            )
+        """)
+        con.commit()
+    finally:
+        con.close()
+
 def execute(sql, params=[]):
     con = get_connection()
     try:

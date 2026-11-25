@@ -19,6 +19,14 @@ CREATE TABLE comments (
     content TEXT
 );
 
+CREATE TABLE reviews (
+    id INTEGER PRIMARY KEY,
+    song_id INTEGER NOT NULL REFERENCES songs(id),
+    user_id INTEGER NOT NULL REFERENCES users(id),
+    rating INTEGER NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    UNIQUE (song_id, user_id)
+);
+
 CREATE TABLE classes (
     id INTEGER PRIMARY KEY,
     title TEXT,

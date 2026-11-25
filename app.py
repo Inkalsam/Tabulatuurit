@@ -70,12 +70,40 @@ def song(song_id):
         return "Kappaletta ei löytynyt", 404
     classes = song_service.get_classes(song_id)
     song_comments = song_service.get_comments(song_id)
+    review_count, review_average, user_rating = song_service.get_review_data(
+        song_id, session.get("user_id")
+    )
     return render_template(
         "show_song.html",
         song=song_details,
         classes=classes,
         comments=song_comments,
+        review_count=review_count,
+        review_average=review_average,
+        user_rating=user_rating,
     )
+
+@app.route("/songs/<int:song_id>/review", methods=["POST"])
+def create_review(song_id):
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+
+    song_details = song_service.get_song(song_id)
+    if not song_details:
+        return "Kappaletta ei löytynyt", 404
+    if session["user_id"] == song_details["user_id"]:
+        return "Et voi arvioida omaa kappalettasi", 403
+
+    rating_value = request.form.get("rating", "")
+    if not rating_value.isdigit():
+        return "VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5", 400
+    rating = int(rating_value)
+    if rating < 1 or rating > 5:
+        return "VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5", 400
+
+    song_service.save_review(song_id, session["user_id"], rating)
+    return redirect(url_for("song", song_id=song_id))
 
 @app.route("/songs/<int:song_id>/edit", methods=["GET", "POST"])
 def edit_song(song_id):

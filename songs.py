@@ -48,6 +48,31 @@ def get_comments(song_id):
     result = db.query(sql, [song_id])
     return result
 
+def get_review_data(song_id, user_id):
+    db.ensure_reviews_schema()
+    summary = db.query(
+        "SELECT COUNT(*) AS count, AVG(rating) AS average "
+        "FROM reviews WHERE song_id = ?",
+        [song_id],
+    )[0]
+    user_review = db.query(
+        "SELECT rating FROM reviews WHERE song_id = ? AND user_id = ?",
+        [song_id, user_id],
+    )
+    return summary["count"], summary["average"], (
+        user_review[0]["rating"] if user_review else None
+    )
+
+def save_review(song_id, user_id, rating):
+    db.ensure_reviews_schema()
+    db.execute(
+        """INSERT INTO reviews (song_id, user_id, rating)
+           VALUES (?, ?, ?)
+           ON CONFLICT (song_id, user_id)
+           DO UPDATE SET rating = excluded.rating""",
+        [song_id, user_id, rating],
+    )
+
 
 def get_songs():
     db.ensure_songs_schema()
@@ -103,6 +128,14 @@ def update_song(song_id, user_id, title, artist, tabulatuuri, classes):
 
 def delete_song(song_id, user_id):
     try:
+        db.ensure_reviews_schema()
+        db.execute(
+            """DELETE FROM reviews
+               WHERE song_id IN (
+                   SELECT id FROM songs WHERE id = ? AND user_id = ?
+               )""",
+            [song_id, user_id],
+        )
         db.ensure_song_classes_schema()
         db.execute(
             """DELETE FROM song_classes
