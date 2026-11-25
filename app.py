@@ -140,6 +140,28 @@ def add_image():
     song_service.add_image(song_id, image)
     return redirect(url_for("edit_images", song_id=song_id))
 
+@app.route("/remove_image", methods=["POST"])
+def remove_images():
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+
+    song_id = request.form.get("song_id", "").strip()
+    if not song_id.isdigit():
+        return "VIRHE: virheellinen kappaleen ID", 400
+    song_id = int(song_id)
+    song_details = song_service.get_song(song_id)
+    if not song_details:
+        abort(404)
+    if song_details["user_id"] != session["user_id"]:
+        abort(403)
+
+    for image_id in request.form.getlist("image_id"):
+        song_service.remove_image(song_id, image_id)
+
+    return redirect("/images/" + str(song_id))
+
+
 @app.route("/songs/<int:song_id>/review", methods=["POST"])
 def create_review(song_id):
     login_redirect = require_user_logged_in()

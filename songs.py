@@ -64,6 +64,11 @@ def get_image(image_id):
     result = db.query(sql, [image_id])
     return result[0]["image"] if result else None
 
+def remove_image(song_id, image_id):
+    sql = "DELETE FROM images WHERE id = ? AND song_id = ?"
+    db.execute(sql, [image_id, song_id])
+
+
 def get_review_data(song_id, user_id):
     db.ensure_reviews_schema()
     summary = db.query(

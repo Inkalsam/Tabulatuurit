@@ -3,6 +3,15 @@
 
 <head>
   <title> {{ song.title }} </title>
+  <style>
+    .tabulature-image {
+      display: block;
+      max-width: 500px;
+      width: 100%;
+      height: auto;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -15,7 +24,7 @@
     </div>
     {% endif %}
     {% for image in images %}
-    <img src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+    <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
     {% endfor %}
     <p>Artisti: {{ song.artist }}</p>
     <p>Tabulatuuri:</p>

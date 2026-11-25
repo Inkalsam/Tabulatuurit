@@ -3,6 +3,15 @@
 
 <head>
   <title> Tabulatuurin kuvat </title>
+  <style>
+    .tabulature-image {
+      display: block;
+      max-width: 500px;
+      width: 100%;
+      height: auto;
+      margin: 10px 0;
+    }
+  </style>
 </head>
 
 <body>
@@ -12,11 +21,18 @@
         Kappaleessa on {{ images|length }} kuvaa.
     </p>
 
+    <form action="{{ url_for('remove_images') }}" method="post">
     {% for image in images %}
+    <input type="checkbox" name="image_id" value="{{ image.id }}">
     <p>
-        <img src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+        <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
     </p>
     {% endfor %}
+     <input type = "hidden" name = "song_id" value="{{ song.id }}">
+     <p>
+      <input type="submit" value="Poista valitut" />
+      </p>
+    </form>
 
     <h2>Lisää uusi kuva</h2>
     <form action="/add_image" method="post" enctype="multipart/form-data">
