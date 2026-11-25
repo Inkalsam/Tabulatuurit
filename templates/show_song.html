@@ -25,6 +25,18 @@
     </ul>
     {% endif %}
     <p>Käyttäjä: <a href="/user/{{ song.user_id }}">{{ song.username }}</a></p>
+    <ul>
+    {% for comment in comments %}
+    <li>{{ comment.content }}, <a href="/user/{{ comment.user_id }}">{{ comment.username }}</a></li>
+    {% endfor %}
+    </ul>
+    <h2>Lisää kommentti</h2>
+    <form action="{{ url_for('create_comment') }}" method="post">
+        <input type="hidden" name="song_id" value="{{ song.id }}">
+        <label for="content">Kommentti:</label>
+        <textarea name="content" id="content" required></textarea>
+        <button type="submit">Lähetä</button>
+    </form>
     <p>
         <a href="{{ url_for('index') }}">Takaisin</a>
     </p>

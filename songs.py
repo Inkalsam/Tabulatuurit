@@ -32,6 +32,23 @@ def add_song(title, artist, tabulatuuri, user_id, classes):
         logging.getLogger(__name__).exception("Kappaleen luominen epäonnistui")
         return "VIRHE: kappaleen luominen epäonnistui", 500
 
+
+def add_comment(song_id, user_id, content):
+    db.ensure_comments_schema()
+    sql = "INSERT INTO comments (song_id, user_id, content) VALUES (?, ?, ?)"
+    db.execute(sql, [song_id, user_id, content])
+
+def get_comments(song_id):
+    db.ensure_comments_schema()
+    sql = """SELECT comments.content, users.id AS user_id, users.username
+             FROM comments
+             JOIN users ON comments.user_id = users.id
+             WHERE comments.song_id = ?
+             ORDER BY comments.id DESC"""
+    result = db.query(sql, [song_id])
+    return result
+
+
 def get_songs():
     db.ensure_songs_schema()
     sql = "SELECT id, title FROM songs ORDER BY id DESC"

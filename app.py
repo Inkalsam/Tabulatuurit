@@ -28,6 +28,33 @@ def songs():
     classes = song_service.get_all_classes()
     return render_template("songs.html", classes=classes)
 
+@app.route("/create_comment", methods=["POST"])
+def create_comment():
+    login_redirect = require_user_logged_in()
+    if login_redirect:
+        return login_redirect
+
+    content = request.form.get("content", "").strip()
+    if not content:
+        return "VIRHE: kommentti puuttuu", 400
+    if len(content) > 500:
+        return "VIRHE: kommentin pituus on liian pitkä", 400
+
+    song_id = request.form.get("song_id", "").strip()
+    if not song_id:
+        return "VIRHE: kappaleen ID puuttuu", 400
+    if not song_id.isdigit():
+        return "VIRHE: virheellinen kappaleen ID", 400
+    song_id = int(song_id)
+    if not song_service.get_song(song_id):
+        return "Kappaletta ei löytynyt", 404
+
+    user_id = session.get("user_id")
+    song_service.add_comment(song_id, user_id, content)
+    return redirect(url_for("song", song_id=song_id))
+
+
+
 @app.route("/user/<int:user_id>")
 def show_user(user_id):
     user = users.get_user(user_id)
@@ -42,7 +69,13 @@ def song(song_id):
     if not song_details:
         return "Kappaletta ei löytynyt", 404
     classes = song_service.get_classes(song_id)
-    return render_template("show_song.html", song=song_details, classes=classes)
+    song_comments = song_service.get_comments(song_id)
+    return render_template(
+        "show_song.html",
+        song=song_details,
+        classes=classes,
+        comments=song_comments,
+    )
 
 @app.route("/songs/<int:song_id>/edit", methods=["GET", "POST"])
 def edit_song(song_id):

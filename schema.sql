@@ -12,6 +12,13 @@ CREATE TABLE songs (
     user_id INTEGER REFERENCES users
 );
 
+CREATE TABLE comments (
+    id INTEGER PRIMARY KEY,
+    song_id INTEGER REFERENCES songs,
+    user_id INTEGER REFERENCES users,
+    content TEXT
+);
+
 CREATE TABLE classes (
     id INTEGER PRIMARY KEY,
     title TEXT,

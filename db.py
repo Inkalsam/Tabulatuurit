@@ -68,6 +68,21 @@ def ensure_song_classes_schema():
     finally:
         con.close()
 
+def ensure_comments_schema():
+    con = get_connection()
+    try:
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS comments (
+                id INTEGER PRIMARY KEY,
+                song_id INTEGER REFERENCES songs(id),
+                user_id INTEGER REFERENCES users(id),
+                content TEXT
+            )
+        """)
+        con.commit()
+    finally:
+        con.close()
+
 def execute(sql, params=[]):
     con = get_connection()
     try:
