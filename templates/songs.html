@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Kappaleet</title>
-</head>
+{% block title %}Kappaleet{% endblock %}
 
-<body>
-    <h1>Kappaleet</h1>
+{% block content %}
+    <h2>Kappaleet</h2>
   <form action="{{ url_for('create_item') }}" method="post">
     <p>
       Kappale: <br />
@@ -33,7 +30,4 @@
     {% endfor %}
     <input type="submit" value="Luo kappale" />
   </form>
-
-</body>
-
-</html>
+{% endblock %}

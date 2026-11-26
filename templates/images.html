@@ -1,21 +1,9 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title> Tabulatuurin kuvat </title>
-  <style>
-    .tabulature-image {
-      display: block;
-      max-width: 500px;
-      width: 100%;
-      height: auto;
-      margin: 10px 0;
-    }
-  </style>
-</head>
+{% block title %}Tabulatuurin kuvat{% endblock %}
 
-<body>
-    <h1>Tabulatuurin kuvat</h1>
+{% block content %}
+    <h2>Tabulatuurin kuvat</h2>
 
     <p>
         Kappaleessa on {{ images|length }} kuvaa.
@@ -34,7 +22,7 @@
       </p>
     </form>
 
-    <h2>Lisää uusi kuva</h2>
+    <h3>Lisää uusi kuva</h3>
     <form action="/add_image" method="post" enctype="multipart/form-data">
     <p>
       Kuva: <input type="file" name="image" accept=".png" required />
@@ -46,6 +34,4 @@
     <p>
         <a href="{{ url_for('song', song_id=song.id) }}">Takaisin</a>
     </p>
-</body>
-
-</html>
+  {% endblock %}

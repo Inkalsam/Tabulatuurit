@@ -1,22 +1,16 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>käyttäjä: {{ user.username }}</title>
-</head>
+{% block title %}{{ user.username }}{% endblock %}
 
-<body>
-    <h1> käyttäjä {{ user.username }}</h1>
+{% block content %}
+
+    <h2> käyttäjä {{ user.username }}</h2>
     <p>Käyttäjällä on yhteensä {{ songs|length }} kappaletta.</p>
-    <p><a href="{{ url_for('index') }}">Takaisin</a></p>
-    <h2>Kappaleet:</h2> 
+    <h3>Kappaleet:</h3> 
 
     <ul>
         {% for song in songs %}
         <li><a href="{{ url_for('song', song_id=song.id) }}">{{ song.title }}</a></li>
         {% endfor %}
     </ul>
-
-</body>
-
-</html>
+{% endblock %}

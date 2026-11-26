@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+
+
+<head>
+  <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+    <h1>Tabulatuurit</h1>
+
+  {% if session.username %}
+  <p>
+    Olet kirjautunut nimellä {{ session.username }}
+  </p>
+  {% endif %}
+
+    <p>
+      <a href="/">Etusivu</a>
+      <a href="{{ url_for('find_song') }}">Etsi kappale</a>
+      {% if session.user_id %}
+      <a href="{{ url_for('songs') }}">Uusi kappale</a>
+      <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+      {% else %}
+      <a href="/login">Kirjaudu sisään</a>
+      <a href="/register">Luo tunnus</a>
+      {% endif %}
+
+    </p>
+
+  {% block content %}{% endblock %}
+</body>
+
+</html>

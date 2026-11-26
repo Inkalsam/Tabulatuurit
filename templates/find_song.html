@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html>
+{% extends "layout.html" %}
 
-<head>
-  <title>Etsi kappale</title>
-</head>
+{% block title %}Etsi kappale{% endblock %}
 
-<body>
-    <h1>Etsi kappale</h1>
+{% block content %}
+    <h2>Etsi kappale</h2>
 
     <form action="{{ url_for('find_song') }}" method="get">
         <p>
@@ -15,9 +12,7 @@
         <input type="submit" value="Etsi" />
     </form>
 
-    <p>
-        <a href="{{ url_for('index') }}">Takaisin</a>
-    </p>
+    
 
     {% if query %}
     <h2>Tulokset</h2>
@@ -34,6 +29,4 @@
     <p>Ei tuloksia.</p>
     {% endif %}
     {% endif %}
-</body>
-
-</html>
+{% endblock %}
