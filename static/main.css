@@ -15,3 +15,72 @@ border: 2px solid black;
   list-style: none;
   padding: 0;
 }
+
+.song-edit {
+  max-width: 42rem;
+  margin: 0.75rem auto;
+  padding: 0.9rem 1rem;
+  border: 2px solid black;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.song-edit h2 {
+  margin: 0 0 0.25rem;
+}
+
+.song-edit-title {
+  margin: 0 0 1rem;
+  color: #333;
+}
+
+.song-edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+}
+
+.song-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.song-edit-field--wide {
+  grid-column: 1 / -1;
+}
+
+.song-edit-field input,
+.song-edit-field select,
+.song-edit-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.4rem;
+  font: inherit;
+}
+
+.song-edit-field textarea {
+  resize: vertical;
+}
+
+.song-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.song-edit-delete {
+  margin-left: auto;
+}
+
+@media (max-width: 22rem) {
+  .song-edit-form {
+    grid-template-columns: 1fr;
+  }
+
+  .song-edit-field--wide {
+    grid-column: auto;
+  }
+}

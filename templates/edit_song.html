@@ -3,34 +3,40 @@
 {% block title %}Muokkaa{% endblock %}
 
 {% block content %}
-  <h2>Muokkaa kappaletta</h2>
-  <form action="{{ url_for('edit_song', song_id=song.id) }}" method="post">
-    <p>
-      Kappale:<br />
-      <input type="text" name="title" maxlength="50" value="{{ song.title }}" required />
-    </p>
-    <p>
-      Artisti:<br />
-      <input type="text" name="artist" maxlength="50" value="{{ song.artist }}" required />
-    </p>
-    <p>
-      Tabulatuuri:<br />
-      <textarea rows="10" cols="50" name="tabulatuuri" maxlength="1000" required>{{ song.tab }}</textarea>
-    </p>
+  <section class="song-edit">
+    <h2>Muokkaa kappaletta</h2>
+    <p class="song-edit-title">{{ song.title }}</p>
+    <form class="song-edit-form" action="{{ url_for('edit_song', song_id=song.id) }}" method="post">
+      <div class="song-edit-field">
+        <label for="title">Kappale</label>
+        <input id="title" type="text" name="title" maxlength="50" value="{{ song.title }}" required />
+      </div>
+      <div class="song-edit-field">
+        <label for="artist">Artisti</label>
+        <input id="artist" type="text" name="artist" maxlength="50" value="{{ song.artist }}" required />
+      </div>
+      <div class="song-edit-field song-edit-field--wide">
+        <label for="tabulatuuri">Tabulatuuri</label>
+        <textarea id="tabulatuuri" rows="6" name="tabulatuuri" maxlength="1000" required>{{ song.tab }}</textarea>
+      </div>
     {% for class in classes %}
-    <p>
-      {{ class }}:<br />
-      <select name="classes">
+      <div class="song-edit-field">
+        <label for="class-{{ loop.index }}">{{ class }}</label>
+        <select id="class-{{ loop.index }}" name="classes">
         <option value="">Valitse</option>
         {% for option in classes[class] %}
         <option value="{{ class }}:{{ option }}" {% if song_classes.get(class) == option %}selected{% endif %}>{{ option }}</option>
         {% endfor %}
-      </select>
-    </p>
+        </select>
+      </div>
     {% endfor %}
-    <input type="submit" value="Tallenna" />
-  </form>
-  <p><a href="{{ url_for('delete_song', song_id=song.id) }}">Poista kappale</a></p>
-  <p><a href="{{ url_for('song', song_id=song.id) }}">Peruuta</a></p>
-
+      <div class="song-edit-field song-edit-field--wide">
+        <div class="song-edit-actions">
+          <button type="submit">Tallenna</button>
+          <a href="{{ url_for('song', song_id=song.id) }}">Peruuta</a>
+          <a class="song-edit-delete" href="{{ url_for('delete_song', song_id=song.id) }}">Poista kappale</a>
+        </div>
+      </div>
+    </form>
+  </section>
 {% endblock %}

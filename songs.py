@@ -163,7 +163,23 @@ def update_song(song_id, user_id, title, artist, tabulatuuri, classes):
 
 def delete_song(song_id, user_id):
     try:
+        db.ensure_comments_schema()
+        db.ensure_images_schema()
         db.ensure_reviews_schema()
+        db.execute(
+            """DELETE FROM comments
+               WHERE song_id IN (
+                   SELECT id FROM songs WHERE id = ? AND user_id = ?
+               )""",
+            [song_id, user_id],
+        )
+        db.execute(
+            """DELETE FROM images
+               WHERE song_id IN (
+                   SELECT id FROM songs WHERE id = ? AND user_id = ?
+               )""",
+            [song_id, user_id],
+        )
         db.execute(
             """DELETE FROM reviews
                WHERE song_id IN (

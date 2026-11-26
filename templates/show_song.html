@@ -14,7 +14,10 @@
     {% for image in images %}
     <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
     {% endfor %}
-    <p>Artisti: {{ song.artist }}</p>
+    <ul>
+        <li>Artisti: {{ song.artist }}</li>
+        <li>Tekijä: <a href="{{ url_for('show_user', user_id=song.user_id) }}">{{ song.username }}</a></li>
+    </ul>
     <p>Tabulatuuri:</p>
     <pre>{{ song.tab }}</pre>
     {% if classes %}
@@ -25,7 +28,6 @@
         {% endfor %}
     </ul>
     {% endif %}
-    <p>Käyttäjä: <a href="/user/{{ song.user_id }}">{{ song.username }}</a></p>
     <h3>Arviot</h3>
     {% if review_count %}
     <p>Tabulatuurin tarkkuus: {{ "%.1f"|format(review_average) }} / 5 ({{ review_count }} arviota)</p>
