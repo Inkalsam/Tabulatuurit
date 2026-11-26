@@ -6,9 +6,19 @@
 <h2>Kaikki kappaleet</h2>
 
 
-<ul>
+<ul class="songs-list">
   {% for song in songs %}
-  <li><a href="{{ url_for('song', song_id=song.id) }}">{{ song.title }}</a></li>
+  <li class="song">
+    <a href="{{ url_for('song', song_id=song.id) }}">{{ song.title }}</a><br>
+    Tekijä: <a href="{{ url_for('show_user', user_id=song.user_id) }}">{{ song.username }}</a><br>
+    Kommenttien määrä: {{ song.comments_count }}<br>
+    Arvostelu:
+    {% if song.review_count %}
+      {{ "%.1f"|format(song.review_average) }} / 5 ({{ song.review_count }} arviota)
+    {% else %}
+      Ei vielä arvioita
+    {% endif %}
+  </li>
   {% endfor %}
 </ul>
 {% endblock %}

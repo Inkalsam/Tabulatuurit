@@ -97,7 +97,21 @@ def save_review(song_id, user_id, rating):
 
 def get_songs():
     db.ensure_songs_schema()
-    sql = "SELECT id, title FROM songs ORDER BY id DESC"
+    db.ensure_comments_schema()
+    db.ensure_reviews_schema()
+    sql = """SELECT songs.id,
+                    songs.title,
+                    users.id AS user_id,
+                    users.username,
+                    (SELECT COUNT(*) FROM comments
+                     WHERE comments.song_id = songs.id) AS comments_count,
+                    (SELECT COUNT(*) FROM reviews
+                     WHERE reviews.song_id = songs.id) AS review_count,
+                    (SELECT AVG(reviews.rating) FROM reviews
+                     WHERE reviews.song_id = songs.id) AS review_average
+             FROM songs
+             LEFT JOIN users ON songs.user_id = users.id
+             ORDER BY songs.id DESC"""
     return db.query(sql)
 
 def search_songs(query):
@@ -112,15 +126,15 @@ def search_songs(query):
 
 def get_song(song_id):
     db.ensure_songs_schema()
-    sql = '''SELECT songs.id,
+    sql = """SELECT songs.id,
                     songs.title,
                     songs.artist,
                     songs.tab,
-                    users.id user_id,
+                    users.id AS user_id,
                     users.username
-                FROM songs
-                LEFT JOIN users ON songs.user_id = users.id
-                WHERE songs.id = ?'''
+             FROM songs
+             LEFT JOIN users ON songs.user_id = users.id
+             WHERE songs.id = ?"""
     result = db.query(sql, [song_id])
     return result[0] if result else None
 

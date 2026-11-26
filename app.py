@@ -278,7 +278,9 @@ def create_item():
     if result is not None:
         return result
 
-    return redirect(url_for("index"))
+    song_id = db.last_insert_id()
+
+    return redirect("/song/" + str(song_id))
 
 @app.route("/register")
 def register():
