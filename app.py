@@ -280,7 +280,7 @@ def create_item():
 
     song_id = db.last_insert_id()
 
-    return redirect("/song/" + str(song_id))
+    return redirect(url_for("song", song_id=song_id))
 
 @app.route("/register")
 def register():
