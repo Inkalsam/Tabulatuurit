@@ -14,7 +14,7 @@
     {% for image in images %}
     <input type="checkbox" name="image_id" value="{{ image.id }}">
     <p>
-        <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+        <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurin kuva">
     </p>
     {% endfor %}
      <input type = "hidden" name = "song_id" value="{{ song.id }}">

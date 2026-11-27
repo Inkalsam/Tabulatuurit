@@ -6,15 +6,15 @@
     <h2>Kappaleet</h2>
   <form action="{{ url_for('create_item') }}" method="post">
     <p>
-      Kappale: <br />
-      <input type="text" name="title" maxlength="50" value="{{ title }}" required />
+      <label for="title">Kappale:</label><br />
+      <input type="text" name="title" id="title" maxlength="50" value="{{ title }}" required />
     </p>
     <p>
-      Artisti: <br />
-      <input type="text" name="artist" maxlength="50" value="{{ artist }}" required />
+      <label for="artist">Artisti:</label><br />
+      <input type="text" name="artist" id="artist" maxlength="50" value="{{ artist }}" required />
     </p>
     <p>
-      Tabulatuuri: <br />
+      <label for="tabulatuuri">Tabulatuuri:</label><br />
       <textarea id="tabulatuuri" rows="6" cols="50" name="tabulatuuri" maxlength="1000" required>{{ tabulatuuri }}</textarea>
     </p>
     <p>
@@ -22,8 +22,8 @@
     </p>
     {% for class in classes %}
     <p>
-      {{ class }}:<br />
-      <select name="classes">
+      <label for="class-{{ loop.index }}">{{ class }}:</label><br />
+      <select id="class-{{ loop.index }}" name="classes">
         <option value="" {% if not selected_classes %}selected{% endif %}>Valitse</option>
       {% for option in classes[class] %}
       <option value="{{ class }}:{{ option }}" {% if (class ~ ':' ~ option) in selected_classes %}selected{% endif %}>{{ option }}</option>
