@@ -1,6 +1,6 @@
 from flask import Flask, abort
 import sqlite3
-from flask import redirect, make_response, render_template, request, session, url_for
+from flask import flash, redirect, make_response, render_template, request, session, url_for
 import config
 import db
 import songs as song_service
@@ -34,20 +34,25 @@ def create_comment():
     if login_redirect:
         return login_redirect
 
-    content = request.form.get("content", "").strip()
-    if not content:
-        return "VIRHE: kommentti puuttuu", 400
-    if len(content) > 500:
-        return "VIRHE: kommentin pituus on liian pitkä", 400
-
     song_id = request.form.get("song_id", "").strip()
     if not song_id:
-        return "VIRHE: kappaleen ID puuttuu", 400
+        flash("VIRHE: kappaleen ID puuttuu")
+        return redirect(url_for("index"))
     if not song_id.isdigit():
-        return "VIRHE: virheellinen kappaleen ID", 400
+        flash("VIRHE: virheellinen kappaleen ID")
+        return redirect(url_for("index"))
     song_id = int(song_id)
     if not song_service.get_song(song_id):
-        return "Kappaletta ei löytynyt", 404
+        flash("Kappaletta ei löytynyt")
+        return redirect(url_for("index"))
+
+    content = request.form.get("content", "").strip()
+    if not content:
+        flash("VIRHE: kommentti puuttuu")
+        return redirect(url_for("song", song_id=song_id))
+    if len(content) > 500:
+        flash("VIRHE: kommentin pituus on liian pitkä")
+        return redirect(url_for("song", song_id=song_id))
 
     user_id = session.get("user_id")
     song_service.add_comment(song_id, user_id, content)
@@ -117,7 +122,8 @@ def add_image():
 
     song_id = request.form.get("song_id", "").strip()
     if not song_id.isdigit():
-        return "VIRHE: virheellinen kappaleen ID", 400
+        flash("VIRHE: virheellinen kappaleen ID")
+        return redirect(url_for("index"))
     song_id = int(song_id)
     song_details = song_service.get_song(song_id)
     if not song_details:
@@ -127,15 +133,19 @@ def add_image():
 
     image_file = request.files.get("image")
     if not image_file or not image_file.filename:
-        return "VIRHE: kuva puuttuu", 400
+        flash("VIRHE: kuva puuttuu")
+        return redirect(url_for("edit_images", song_id=song_id))
     if not image_file.filename.lower().endswith(".png"):
-        return "VIRHE: väärä tiedostomuoto", 400
+        flash("VIRHE: väärä tiedostomuoto")
+        return redirect(url_for("edit_images", song_id=song_id))
 
     image = image_file.stream.read(100 * 1024 + 1)
     if len(image) > 100 * 1024:
-        return "VIRHE: liian suuri kuva", 400
+        flash("VIRHE: liian suuri kuva")
+        return redirect(url_for("edit_images", song_id=song_id))
     if not image.startswith(b"\x89PNG\r\n\x1a\n"):
-        return "VIRHE: tiedosto ei ole PNG-kuva", 400
+        flash("VIRHE: tiedosto ei ole PNG-kuva")
+        return redirect(url_for("edit_images", song_id=song_id))
 
     song_service.add_image(song_id, image)
     return redirect(url_for("edit_images", song_id=song_id))
@@ -148,7 +158,8 @@ def remove_images():
 
     song_id = request.form.get("song_id", "").strip()
     if not song_id.isdigit():
-        return "VIRHE: virheellinen kappaleen ID", 400
+        flash("VIRHE: virheellinen kappaleen ID")
+        return redirect(url_for("index"))
     song_id = int(song_id)
     song_details = song_service.get_song(song_id)
     if not song_details:
@@ -159,7 +170,7 @@ def remove_images():
     for image_id in request.form.getlist("image_id"):
         song_service.remove_image(song_id, image_id)
 
-    return redirect("/images/" + str(song_id))
+    return redirect(url_for("edit_images", song_id=song_id))
 
 
 @app.route("/songs/<int:song_id>/review", methods=["POST"])
@@ -172,14 +183,17 @@ def create_review(song_id):
     if not song_details:
         return "Kappaletta ei löytynyt", 404
     if session["user_id"] == song_details["user_id"]:
-        return "Et voi arvioida omaa kappalettasi", 403
+        flash("Et voi arvioida omaa kappalettasi")
+        return redirect(url_for("song", song_id=song_id))
 
     rating_value = request.form.get("rating", "")
     if not rating_value.isdigit():
-        return "VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5", 400
+        flash("VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5")
+        return redirect(url_for("song", song_id=song_id))
     rating = int(rating_value)
     if rating < 1 or rating > 5:
-        return "VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5", 400
+        flash("VIRHE: arvosanan tulee olla kokonaisluku väliltä 1–5")
+        return redirect(url_for("song", song_id=song_id))
 
     song_service.save_review(song_id, session["user_id"], rating)
     return redirect(url_for("song", song_id=song_id))
@@ -197,12 +211,24 @@ def edit_song(song_id):
         title = request.form.get("title", "").strip()
         artist = request.form.get("artist", "").strip()
         tabulatuuri = request.form.get("tabulatuuri", "").strip()
-        if not title or len(title) > 50:
-            return "VIRHE: kappaleen nimi on liian pitkä", 400
-        if not artist or len(artist) > 50:
-            return "VIRHE: artistin nimi on liian pitkä", 400
-        if not tabulatuuri or len(tabulatuuri) > 1000:
-            return "VIRHE: tabulatuurin pituus on liian pitkä", 400
+        if not title:
+            flash("VIRHE: kappaleen nimi puuttuu")
+            return redirect(url_for("edit_song", song_id=song_id))
+        if len(title) > 50:
+            flash("VIRHE: kappaleen nimi on liian pitkä")
+            return redirect(url_for("edit_song", song_id=song_id))
+        if not artist:
+            flash("VIRHE: artistin nimi puuttuu")
+            return redirect(url_for("edit_song", song_id=song_id))
+        if len(artist) > 50:
+            flash("VIRHE: artistin nimi on liian pitkä")
+            return redirect(url_for("edit_song", song_id=song_id))
+        if not tabulatuuri:
+            flash("VIRHE: tabulatuuri puuttuu")
+            return redirect(url_for("edit_song", song_id=song_id))
+        if len(tabulatuuri) > 1000:
+            flash("VIRHE: tabulatuurin pituus on liian pitkä")
+            return redirect(url_for("edit_song", song_id=song_id))
 
         classes = []
         all_classes = song_service.get_all_classes()
@@ -254,12 +280,24 @@ def create_item():
     title = request.form.get("title", "").strip()
     artist = request.form.get("artist", "").strip()
     tabulatuuri = request.form.get("tabulatuuri", "").strip()
-    if not title or len(title) > 50:
-        return "VIRHE: kappaleen nimi on liian pitkä", 400
-    if not artist or len(artist) > 50:
-        return "VIRHE: artistin nimi on liian pitkä", 400
-    if not tabulatuuri or len(tabulatuuri) > 1000:
-        return "VIRHE: tabulatuurin pituus on liian pitkä", 400
+    if not title:
+        flash("VIRHE: kappaleen nimi puuttuu")
+        return redirect(url_for("songs"))
+    if len(title) > 50:
+        flash("VIRHE: kappaleen nimi on liian pitkä")
+        return redirect(url_for("songs"))
+    if not artist:
+        flash("VIRHE: artistin nimi puuttuu")
+        return redirect(url_for("songs"))
+    if len(artist) > 50:
+        flash("VIRHE: artistin nimi on liian pitkä")
+        return redirect(url_for("songs"))
+    if not tabulatuuri:
+        flash("VIRHE: tabulatuuri puuttuu")
+        return redirect(url_for("songs"))
+    if len(tabulatuuri) > 1000:
+        flash("VIRHE: tabulatuurin pituus on liian pitkä")
+        return redirect(url_for("songs"))
     user_id = session.get("user_id")
 
     all_classes = song_service.get_all_classes()
@@ -293,14 +331,17 @@ def create():
     password1 = request.form.get("password1", "")
     password2 = request.form.get("password2", "")
     if not username or not password1 or not password2:
-        return "VIRHE: kaikki kentät ovat pakollisia", 400
+        flash("VIRHE: kaikki kentät ovat pakollisia")
+        return redirect(url_for("register"))
     if password1 != password2:
-        return "VIRHE: salasanat eivät ole samat", 400
+        flash("VIRHE: salasanat eivät ole samat")
+        return redirect(url_for("register"))
 
     try:
         users.create_user(username, password1)
     except sqlite3.IntegrityError:
-        return "VIRHE: tunnus on jo varattu", 409
+        flash("VIRHE: tunnus on jo varattu")
+        return redirect(url_for("register"))
 
     return "Tunnus luotu"
 
@@ -318,7 +359,8 @@ def login():
         password = request.form.get("password", "")
 
         if not username or not password:
-            return "VIRHE: tunnus ja salasana ovat pakollisia", 400
+            flash("VIRHE: Tunnus ja salasana ovat pakollisia")
+            return redirect(url_for("login"))
 
         user_id = users.check_login(username, password)
         if user_id:
@@ -326,7 +368,8 @@ def login():
             session["username"] = username
             return redirect("/")
         else:
-            return "VIRHE: väärä tunnus tai salasana", 401
+            flash("Virhe: Väärä tunnus tai salasana")
+            return redirect(url_for("login"))
 
 @app.route("/logout")
 def logout():

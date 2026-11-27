@@ -15,3 +15,11 @@ border: 2px solid black;
   list-style: none;
   padding: 0;
 }
+
+.info {
+  border: 2px solid black;
+  margin: 1em;
+  padding: 0.5em;
+  background-color: blue;
+  color: white;
+}
