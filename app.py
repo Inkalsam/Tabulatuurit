@@ -1,4 +1,5 @@
 import secrets
+import markupsafe
 from flask import Flask, abort
 import sqlite3
 from flask import flash, redirect, make_response, render_template, request, session, url_for
@@ -9,6 +10,10 @@ import users
 
 app = Flask(__name__)
 app.config.from_object(config)
+
+TAB_STRINGS = ("e", "B", "G", "D", "A", "E")
+TAB_MEASURE_LENGTH = 19
+TAB_MAX_LENGTH = 1000
 
 @app.before_request
 def ensure_csrf_token():
@@ -26,6 +31,33 @@ def check_csrf():
     if not form_token or not session_token or not secrets.compare_digest(form_token, session_token):
         abort(403)
 
+@app.template_filter()
+def show_lines(content):
+    content = str(markupsafe.escape(content))
+    content = content.replace("\n", "<br />")
+    return markupsafe.Markup(content)
+
+def initial_tabulature():
+    measure = "-" * TAB_MEASURE_LENGTH
+    return "\n".join(f"{string}|{measure}|" for string in TAB_STRINGS)
+
+def add_tab_measure(tabulature):
+    if not tabulature.strip():
+        return initial_tabulature(), None
+
+    lines = tabulature.splitlines()
+    if len(lines) != len(TAB_STRINGS):
+        return tabulature, "Lisää tahti edellyttää kuutta riviä."
+
+    measure = "-" * TAB_MEASURE_LENGTH
+    extended = "\n".join(
+        f"{line[:-1]}{measure}|" if line.endswith("|") else f"{line}{measure}"
+        for line in lines
+    )
+    if len(extended) > TAB_MAX_LENGTH:
+        return tabulature, "Tabulatuuri on saavuttanut 1000 merkin enimmäispituuden."
+    return extended, None
+
 @app.route("/find_song")
 def find_song():
     query = request.args.get("query", "").strip()
@@ -38,7 +70,14 @@ def songs():
     if login_redirect:
         return login_redirect
     classes = song_service.get_all_classes()
-    return render_template("songs.html", classes=classes)
+    return render_template(
+        "songs.html",
+        classes=classes,
+        title="",
+        artist="",
+        tabulatuuri=initial_tabulature(),
+        selected_classes=[],
+    )
 
 @app.route("/create_comment", methods=["POST"])
 def create_comment():
@@ -225,6 +264,20 @@ def edit_song(song_id):
 
     if request.method == "POST":
         check_csrf()
+        if request.form.get("action") == "add_measure":
+            tabulatuuri, error = add_tab_measure(request.form.get("tabulatuuri", ""))
+            if error:
+                flash(error)
+            return render_template(
+                "edit_song.html",
+                song=song_to_edit,
+                classes=song_service.get_all_classes(),
+                form_title=request.form.get("title", song_to_edit["title"]),
+                form_artist=request.form.get("artist", song_to_edit["artist"]),
+                form_tabulatuuri=tabulatuuri,
+                selected_classes=request.form.getlist("classes"),
+            )
+
         title = request.form.get("title", "").strip()
         artist = request.form.get("artist", "").strip()
         tabulatuuri = request.form.get("tabulatuuri", "").strip()
@@ -243,7 +296,7 @@ def edit_song(song_id):
         if not tabulatuuri:
             flash("VIRHE: tabulatuuri puuttuu")
             return redirect(url_for("edit_song", song_id=song_id))
-        if len(tabulatuuri) > 1000:
+        if len(tabulatuuri) > TAB_MAX_LENGTH:
             flash("VIRHE: tabulatuurin pituus on liian pitkä")
             return redirect(url_for("edit_song", song_id=song_id))
 
@@ -265,11 +318,17 @@ def edit_song(song_id):
             return result
         return redirect(url_for("song", song_id=song_id))
 
+    song_classes = song_service.get_classes(song_id)
     return render_template(
         "edit_song.html",
         song=song_to_edit,
-        song_classes=song_service.get_classes(song_id),
         classes=song_service.get_all_classes(),
+        form_title=song_to_edit["title"],
+        form_artist=song_to_edit["artist"],
+        form_tabulatuuri=song_to_edit["tab"],
+        selected_classes=[
+            f"{class_name}:{value}" for class_name, value in song_classes.items()
+        ],
     )
 
 @app.route("/songs/<int:song_id>/delete", methods=["GET", "POST"])
@@ -296,6 +355,19 @@ def create_item():
         return login_redirect
     check_csrf()
 
+    if request.form.get("action") == "add_measure":
+        tabulatuuri, error = add_tab_measure(request.form.get("tabulatuuri", ""))
+        if error:
+            flash(error)
+        return render_template(
+            "songs.html",
+            classes=song_service.get_all_classes(),
+            title=request.form.get("title", ""),
+            artist=request.form.get("artist", ""),
+            tabulatuuri=tabulatuuri,
+            selected_classes=request.form.getlist("classes"),
+        )
+
     title = request.form.get("title", "").strip()
     artist = request.form.get("artist", "").strip()
     tabulatuuri = request.form.get("tabulatuuri", "").strip()
@@ -314,7 +386,7 @@ def create_item():
     if not tabulatuuri:
         flash("VIRHE: tabulatuuri puuttuu")
         return redirect(url_for("songs"))
-    if len(tabulatuuri) > 1000:
+    if len(tabulatuuri) > TAB_MAX_LENGTH:
         flash("VIRHE: tabulatuurin pituus on liian pitkä")
         return redirect(url_for("songs"))
     user_id = session.get("user_id")

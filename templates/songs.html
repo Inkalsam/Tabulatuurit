@@ -7,23 +7,26 @@
   <form action="{{ url_for('create_item') }}" method="post">
     <p>
       Kappale: <br />
-      <input type="text" name="title" maxlength="50" required />
+      <input type="text" name="title" maxlength="50" value="{{ title }}" required />
     </p>
     <p>
       Artisti: <br />
-      <input type="text" name="artist" maxlength="50" required />
+      <input type="text" name="artist" maxlength="50" value="{{ artist }}" required />
     </p>
     <p>
       Tabulatuuri: <br />
-      <textarea rows="10" cols="50" name="tabulatuuri" maxlength="1000" required></textarea>
+      <textarea id="tabulatuuri" rows="6" cols="50" name="tabulatuuri" maxlength="1000" required>{{ tabulatuuri }}</textarea>
+    </p>
+    <p>
+      <button type="submit" name="action" value="add_measure" formnovalidate>Lisää tahti</button>
     </p>
     {% for class in classes %}
     <p>
       {{ class }}:<br />
       <select name="classes">
-        <option value="">Valitse</option>
+        <option value="" {% if not selected_classes %}selected{% endif %}>Valitse</option>
       {% for option in classes[class] %}
-      <option value="{{ class }}:{{ option }}">{{ option }}</option>
+      <option value="{{ class }}:{{ option }}" {% if (class ~ ':' ~ option) in selected_classes %}selected{% endif %}>{{ option }}</option>
       {% endfor %}
       </select>
       </p>

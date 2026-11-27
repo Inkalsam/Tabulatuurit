@@ -12,14 +12,14 @@
     </div>
     {% endif %}
     {% for image in images %}
-    <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurikuva">
+    <img class="tabulature-image" src="{{ url_for('show_image', image_id=image.id) }}" alt="Tabulatuurissa oleva kuva">
     {% endfor %}
     <ul>
         <li>Artisti: {{ song.artist }}</li>
         <li>Tekijä: <a href="{{ url_for('show_user', user_id=song.user_id) }}">{{ song.username }}</a></li>
     </ul>
     <p>Tabulatuuri:</p>
-    <pre>{{ song.tab }}</pre>
+    <pre>{{ song.tab | show_lines }}</pre>
     {% if classes %}
     <p>Luokat:</p>
     <ul>
