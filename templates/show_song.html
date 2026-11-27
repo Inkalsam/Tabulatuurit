@@ -45,6 +45,7 @@
             <option value="{{ rating }}" {% if user_rating == rating %}selected{% endif %}>{{ rating }}</option>
             {% endfor %}
         </select>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
         <button type="submit">{% if user_rating %}Päivitä arvio{% else %}Lähetä arvio{% endif %}</button>
     </form>
     {% elif not session.get('user_id') %}
@@ -60,6 +61,7 @@
         <input type="hidden" name="song_id" value="{{ song.id }}">
         <label for="content">Kommentti:</label>
         <textarea name="content" id="content" required></textarea>
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
         <button type="submit">Lähetä</button>
     </form>
     {% endblock %}

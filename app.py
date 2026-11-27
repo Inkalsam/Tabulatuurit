@@ -1,3 +1,4 @@
+import secrets
 from flask import Flask, abort
 import sqlite3
 from flask import flash, redirect, make_response, render_template, request, session, url_for
@@ -9,10 +10,21 @@ import users
 app = Flask(__name__)
 app.config.from_object(config)
 
+@app.before_request
+def ensure_csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+
 @app.route("/")
 def index():
     all_songs = song_service.get_songs()
     return render_template("index.html", songs=all_songs)
+
+def check_csrf():
+    form_token = request.form.get("csrf_token", "")
+    session_token = session.get("csrf_token", "")
+    if not form_token or not session_token or not secrets.compare_digest(form_token, session_token):
+        abort(403)
 
 @app.route("/find_song")
 def find_song():
@@ -33,6 +45,7 @@ def create_comment():
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
+    check_csrf()
 
     song_id = request.form.get("song_id", "").strip()
     if not song_id:
@@ -119,6 +132,7 @@ def add_image():
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
+    check_csrf()
 
     song_id = request.form.get("song_id", "").strip()
     if not song_id.isdigit():
@@ -155,6 +169,7 @@ def remove_images():
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
+    check_csrf()
 
     song_id = request.form.get("song_id", "").strip()
     if not song_id.isdigit():
@@ -178,6 +193,7 @@ def create_review(song_id):
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
+    check_csrf()
 
     song_details = song_service.get_song(song_id)
     if not song_details:
@@ -208,6 +224,7 @@ def edit_song(song_id):
         return "Ei käyttöoikeutta", 403
 
     if request.method == "POST":
+        check_csrf()
         title = request.form.get("title", "").strip()
         artist = request.form.get("artist", "").strip()
         tabulatuuri = request.form.get("tabulatuuri", "").strip()
@@ -266,6 +283,7 @@ def delete_song(song_id):
     if request.method == "GET":
         return render_template("remove_song.html", song=song_details)
 
+    check_csrf()
     result = song_service.delete_song(song_id, session["user_id"])
     if result is not None:
         return result
@@ -276,6 +294,7 @@ def create_item():
     login_redirect = require_user_logged_in()
     if login_redirect:
         return login_redirect
+    check_csrf()
 
     title = request.form.get("title", "").strip()
     artist = request.form.get("artist", "").strip()
@@ -326,6 +345,7 @@ def register():
 
 @app.route("/create", methods=["POST"])
 def create():
+    check_csrf()
 
     username = request.form.get("username", "").strip()
     password1 = request.form.get("password1", "")
@@ -353,6 +373,7 @@ def require_user_logged_in():
 def login():
     if request.method == "GET":
         return render_template("login.html")
+    check_csrf()
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -366,13 +387,15 @@ def login():
         if user_id:
             session["user_id"] = user_id
             session["username"] = username
+            session["csrf_token"] = secrets.token_hex(16)
             return redirect("/")
         else:
             flash("Virhe: Väärä tunnus tai salasana")
             return redirect(url_for("login"))
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
+    check_csrf()
     session.clear()
     return redirect("/")
 

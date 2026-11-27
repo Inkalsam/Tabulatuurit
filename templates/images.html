@@ -19,6 +19,7 @@
     {% endfor %}
      <input type = "hidden" name = "song_id" value="{{ song.id }}">
      <p>
+      <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       <input type="submit" value="Poista valitut" />
       </p>
     </form>
@@ -29,6 +30,7 @@
       Kuva: <input type="file" name="image" accept=".png" required />
     </p>
     <input type = "hidden" name = "song_id" value="{{ song.id }}">
+     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
     <input type="submit" value="Lähetä" />
   </form>
 

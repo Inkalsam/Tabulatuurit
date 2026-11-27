@@ -30,6 +30,7 @@
         </select>
       </div>
     {% endfor %}
+     <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
       <div class="song-edit-field song-edit-field--wide">
         <div class="song-edit-actions">
           <button type="submit">Tallenna</button>

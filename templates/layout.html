@@ -17,18 +17,21 @@
   </p>
   {% endif %}
 
-    <p>
+    <nav>
       <a href="/">Etusivu</a>
       <a href="{{ url_for('find_song') }}">Etsi kappale</a>
       {% if session.user_id %}
       <a href="{{ url_for('songs') }}">Uusi kappale</a>
-      <a href="{{ url_for('logout') }}">Kirjaudu ulos</a>
+      <form action="{{ url_for('logout') }}" method="post" class="logout-form">
+        <input type="hidden" name="csrf_token" value="{{ session.csrf_token }}" />
+        <button type="submit">Kirjaudu ulos</button>
+      </form>
       {% else %}
       <a href="/login">Kirjaudu sisään</a>
       <a href="/register">Luo tunnus</a>
       {% endif %}
 
-    </p>
+    </nav>
 
   {% for message in get_flashed_messages() %}
   <div class="info">
